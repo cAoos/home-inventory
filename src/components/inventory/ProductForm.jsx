@@ -10,11 +10,12 @@ import { UNITS } from "@/lib/units";
 const categories = ["Food", "Beverages", "Cleaning supplies", "Personal care", "Pet supplies", "Medicines", "Other"];
 const locations = ["Kitchen", "Refrigerator", "Freezer", "Bathroom", "Laundry room", "Pantry", "Other"];
 
-export default function ProductForm({ open, onOpenChange, product, onSave }) {
+export default function ProductForm({ open, onOpenChange, product, initialValues, onSave }) {
   const [form, setForm] = useState(product || {
     name: "", category: "Food", brand: "", quantity: 1, unit: "Units",
     location: "Kitchen", purchase_date: "", expiration_date: "",
     min_stock: 1, consumption_rate: 0, estimated_price: 0, notes: "",
+    ...initialValues,
   });
   const [saving, setSaving] = useState(false);
 

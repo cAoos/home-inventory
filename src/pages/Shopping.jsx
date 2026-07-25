@@ -11,7 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import VoiceButton from "@/components/shared/VoiceButton";
 import { UNITS } from "@/lib/units";
+import { parseShoppingVoiceCommand } from "@/lib/voiceCommands";
 
 export default function Shopping() {
   const [lists, setLists] = useState([]);
@@ -24,6 +26,10 @@ export default function Shopping() {
   const [editingList, setEditingList] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [voiceItemFormOpen, setVoiceItemFormOpen] = useState(false);
+  const [voiceItemDraft, setVoiceItemDraft] = useState({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "" });
+  const [voiceTargetListId, setVoiceTargetListId] = useState("");
+  const [voiceError, setVoiceError] = useState("");
 
   const loadLists = () => ShoppingList.list().then(setLists);
   const loadItems = (listId) => ShoppingItem.list({ list_id: listId }).then(setItems);
@@ -97,6 +103,41 @@ export default function Shopping() {
       notes: item.notes || "",
     });
     setItemFormOpen(true);
+  };
+
+  const handleVoiceItemResult = (transcript) => {
+    if (lists.length === 0) {
+      setVoiceError("Primero crea una lista de compras.");
+      setTimeout(() => setVoiceError(""), 3000);
+      return;
+    }
+    const parsed = parseShoppingVoiceCommand(transcript);
+    if (!parsed || !parsed.product_name) {
+      setVoiceError("No entendí el producto, intenta de nuevo.");
+      setTimeout(() => setVoiceError(""), 3000);
+      return;
+    }
+    setVoiceError("");
+    setVoiceTargetListId("");
+    setVoiceItemDraft(parsed);
+    setVoiceItemFormOpen(true);
+  };
+
+  const saveVoiceItem = async (e) => {
+    e.preventDefault();
+    if (!voiceTargetListId) return;
+    setSaving(true);
+    const data = {
+      ...voiceItemDraft,
+      quantity: parseFloat(voiceItemDraft.quantity) || 1,
+      estimated_price: parseFloat(voiceItemDraft.estimated_price) || 0,
+      list_id: voiceTargetListId,
+      purchased: false,
+    };
+    await ShoppingItem.create(data);
+    setSaving(false);
+    setVoiceItemFormOpen(false);
+    if (activeList && activeList.id === voiceTargetListId) loadItems(activeList.id);
   };
 
   const toggleItem = async (item) => {
@@ -214,11 +255,13 @@ export default function Shopping() {
   return (
     <div>
       <PageHeader title="Shopping Lists" description="Manage your shopping lists">
+        <VoiceButton onResult={handleVoiceItemResult} />
         <Button onClick={openNewListForm}>
           <Plus className="w-4 h-4 mr-2" />
           New List
         </Button>
       </PageHeader>
+      {voiceError && <p className="text-sm text-destructive -mt-4 mb-4">{voiceError}</p>}
 
       {lists.length === 0 ? (
         <EmptyState icon={ShoppingCart} title="No shopping lists" description="Create your first shopping list" actionLabel="New List" onAction={openNewListForm} />
@@ -273,6 +316,54 @@ export default function Shopping() {
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => { setListFormOpen(false); setEditingList(null); }}>Cancel</Button>
               <Button type="submit" disabled={saving}>{saving ? "Saving..." : editingList ? "Save Changes" : "Create List"}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={voiceItemFormOpen} onOpenChange={setVoiceItemFormOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Confirm Item (Voice)</DialogTitle></DialogHeader>
+          <form onSubmit={saveVoiceItem} className="space-y-3">
+            <div>
+              <Label>List *</Label>
+              <Select value={voiceTargetListId} onValueChange={setVoiceTargetListId}>
+                <SelectTrigger><SelectValue placeholder="Select a list" /></SelectTrigger>
+                <SelectContent>
+                  {lists.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Product Name *</Label>
+              <Input value={voiceItemDraft.product_name} onChange={e => setVoiceItemDraft(f => ({ ...f, product_name: e.target.value }))} required />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Quantity</Label>
+                <Input type="number" min="0.01" step="0.01" value={voiceItemDraft.quantity} onChange={e => setVoiceItemDraft(f => ({ ...f, quantity: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Unit</Label>
+                <Select value={voiceItemDraft.unit} onValueChange={v => setVoiceItemDraft(f => ({ ...f, unit: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Est. Price</Label>
+                <Input type="number" min="0" step="0.01" value={voiceItemDraft.estimated_price} onChange={e => setVoiceItemDraft(f => ({ ...f, estimated_price: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Store</Label>
+                <Input value={voiceItemDraft.store} onChange={e => setVoiceItemDraft(f => ({ ...f, store: e.target.value }))} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setVoiceItemFormOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={saving || !voiceTargetListId}>{saving ? "Saving..." : "Add Item"}</Button>
             </div>
           </form>
         </DialogContent>

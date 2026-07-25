@@ -8,6 +8,8 @@ import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import ProductCard from "@/components/inventory/ProductCard";
 import ProductForm from "@/components/inventory/ProductForm";
+import VoiceButton from "@/components/shared/VoiceButton";
+import { parseInventoryVoiceCommand } from "@/lib/voiceCommands";
 
 const categories = ["All", "Food", "Beverages", "Cleaning supplies", "Personal care", "Pet supplies", "Medicines", "Other"];
 
@@ -17,6 +19,9 @@ export default function Inventory() {
   const [category, setCategory] = useState("All");
   const [formOpen, setFormOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [voiceDraft, setVoiceDraft] = useState(null);
+  const [voiceDraftKey, setVoiceDraftKey] = useState(0);
+  const [voiceError, setVoiceError] = useState("");
   const [loading, setLoading] = useState(true);
 
   const loadProducts = () => Product.list().then(p => { setProducts(p); setLoading(false); });
@@ -37,6 +42,20 @@ export default function Inventory() {
     setFormOpen(true);
   };
 
+  const handleVoiceResult = (transcript) => {
+    const parsed = parseInventoryVoiceCommand(transcript);
+    if (!parsed || !parsed.name) {
+      setVoiceError("No entendí el producto, intenta de nuevo.");
+      setTimeout(() => setVoiceError(""), 3000);
+      return;
+    }
+    setVoiceError("");
+    setEditProduct(null);
+    setVoiceDraft(parsed);
+    setVoiceDraftKey((k) => k + 1);
+    setFormOpen(true);
+  };
+
   const handleDelete = async (id) => {
     if (confirm("Delete this product?")) {
       await Product.delete(id);
@@ -53,11 +72,13 @@ export default function Inventory() {
   return (
     <div>
       <PageHeader title="Inventory" description="Manage your home products">
-        <Button onClick={() => { setEditProduct(null); setFormOpen(true); }}>
+        <VoiceButton onResult={handleVoiceResult} />
+        <Button onClick={() => { setEditProduct(null); setVoiceDraft(null); setFormOpen(true); }}>
           <Plus className="w-4 h-4 mr-2" />
           Add Product
         </Button>
       </PageHeader>
+      {voiceError && <p className="text-sm text-destructive -mt-4 mb-4">{voiceError}</p>}
 
       <div className="flex gap-3 mb-6 flex-col sm:flex-row">
         <div className="relative flex-1">
@@ -98,9 +119,11 @@ export default function Inventory() {
       )}
 
       <ProductForm
+        key={editProduct?.id || `voice-${voiceDraftKey}`}
         open={formOpen}
-        onOpenChange={(open) => { setFormOpen(open); if (!open) setEditProduct(null); }}
+        onOpenChange={(open) => { setFormOpen(open); if (!open) { setEditProduct(null); setVoiceDraft(null); } }}
         product={editProduct}
+        initialValues={voiceDraft}
         onSave={handleSave}
       />
     </div>
