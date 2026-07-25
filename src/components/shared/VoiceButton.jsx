@@ -3,8 +3,15 @@ import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 
+const ERROR_MESSAGES = {
+  "not-allowed": "Permiso de micrófono denegado.",
+  "audio-capture": "No se encontró un micrófono.",
+  "service-not-allowed": "El navegador bloqueó el reconocimiento de voz.",
+  network: "Sin conexión al servicio de voz.",
+};
+
 export default function VoiceButton({ onResult, onError, lang = "es-CO" }) {
-  const { isSupported, listening, interimTranscript, start, stop } = useVoiceRecognition({ lang });
+  const { isSupported, listening, interimTranscript, error, start, stop } = useVoiceRecognition({ lang });
 
   if (!isSupported) {
     return (
@@ -43,6 +50,11 @@ export default function VoiceButton({ onResult, onError, lang = "es-CO" }) {
       {listening && (
         <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-xs text-muted-foreground whitespace-nowrap bg-card border border-border rounded px-2 py-1 shadow-sm z-10">
           {interimTranscript || "Escuchando..."}
+        </span>
+      )}
+      {!listening && error && (
+        <span className="absolute top-full left-1/2 -translate-x-1/2 mt-1 text-xs text-destructive whitespace-nowrap bg-card border border-border rounded px-2 py-1 shadow-sm z-10">
+          {ERROR_MESSAGES[error] || `Error: ${error}`}
         </span>
       )}
     </div>

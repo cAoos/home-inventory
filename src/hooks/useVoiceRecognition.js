@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const SpeechRecognitionAPI =
   typeof window !== "undefined" ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 
+const FATAL_ERRORS = new Set(["not-allowed", "audio-capture", "service-not-allowed"]);
+
 export function useVoiceRecognition({ lang = "es-CO" } = {}) {
   const [listening, setListening] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
@@ -10,16 +12,13 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
   const recognitionRef = useRef(null);
   const onResultRef = useRef(null);
   const finalTranscriptRef = useRef("");
+  const manualStopRef = useRef(true);
 
   const isSupported = !!SpeechRecognitionAPI;
 
-  useEffect(() => {
-    if (!isSupported) return;
+  const createRecognition = useCallback(() => {
     const recognition = new SpeechRecognitionAPI();
     recognition.lang = lang;
-    // continuous keeps the mic open across natural pauses in a spoken
-    // command; without it, recognition ends after the first short pause
-    // and cuts the rest of the sentence off.
     recognition.continuous = true;
     recognition.interimResults = true;
 
@@ -37,10 +36,27 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
     };
 
     recognition.onerror = (event) => {
-      setError(event.error);
+      if (FATAL_ERRORS.has(event.error)) {
+        // Don't auto-restart on permission/hardware errors — surface and stop.
+        manualStopRef.current = true;
+        setError(event.error);
+      } else if (event.error !== "no-speech" && event.error !== "aborted") {
+        setError(event.error);
+      }
     };
 
     recognition.onend = () => {
+      if (!manualStopRef.current) {
+        // Chrome frequently ends the session on its own after a few seconds
+        // even with continuous:true. Restart transparently so the mic stays
+        // "on" from the user's perspective until they press stop themselves.
+        try {
+          recognition.start();
+          return;
+        } catch {
+          // fall through and finalize below
+        }
+      }
       setListening(false);
       setInterimTranscript("");
       const finalText = finalTranscriptRef.current.trim();
@@ -48,26 +64,34 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
       if (finalText) onResultRef.current?.(finalText);
     };
 
-    recognitionRef.current = recognition;
-    return () => recognition.abort();
-  }, [isSupported, lang]);
+    return recognition;
+  }, [lang]);
 
   const start = useCallback((onResult) => {
-    if (!recognitionRef.current || listening) return;
+    if (!isSupported || listening) return;
     onResultRef.current = onResult;
     finalTranscriptRef.current = "";
+    manualStopRef.current = false;
     setError(null);
     setInterimTranscript("");
+    const recognition = createRecognition();
+    recognitionRef.current = recognition;
     try {
-      recognitionRef.current.start();
+      recognition.start();
       setListening(true);
     } catch {
-      // start() throws if already started; ignore
+      setListening(false);
     }
-  }, [listening]);
+  }, [isSupported, listening, createRecognition]);
 
   const stop = useCallback(() => {
+    manualStopRef.current = true;
     recognitionRef.current?.stop();
+  }, []);
+
+  useEffect(() => () => {
+    manualStopRef.current = true;
+    recognitionRef.current?.abort();
   }, []);
 
   return { isSupported, listening, interimTranscript, error, start, stop };
