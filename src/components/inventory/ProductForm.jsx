@@ -5,9 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { UNITS } from "@/lib/units";
 
 const categories = ["Food", "Beverages", "Cleaning supplies", "Personal care", "Pet supplies", "Medicines", "Other"];
-const units = ["Units", "Kilograms", "Grams", "Liters", "Milliliters"];
 const locations = ["Kitchen", "Refrigerator", "Freezer", "Bathroom", "Laundry room", "Pantry", "Other"];
 
 export default function ProductForm({ open, onOpenChange, product, onSave }) {
@@ -62,7 +62,7 @@ export default function ProductForm({ open, onOpenChange, product, onSave }) {
               <Select value={form.unit} onValueChange={(v) => update("unit", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {units.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                  {UNITS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
