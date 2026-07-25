@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, ShoppingCart, Check, ChevronRight, ArrowLeft, Trash2 } from "lucide-react";
+import { Plus, ShoppingCart, Check, ChevronRight, ArrowLeft, Trash2, Pencil } from "lucide-react";
 import { ShoppingList, ShoppingItem } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ export default function Shopping() {
   const [itemFormOpen, setItemFormOpen] = useState(false);
   const [listForm, setListForm] = useState({ name: "", budget: "", notes: "" });
   const [itemForm, setItemForm] = useState({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
+  const [editingList, setEditingList] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const loadLists = () => ShoppingList.list().then(setLists);
@@ -31,24 +33,68 @@ export default function Shopping() {
     loadItems(list.id);
   };
 
-  const createList = async (e) => {
+  const saveList = async (e) => {
     e.preventDefault();
     setSaving(true);
-    await ShoppingList.create({ ...listForm, status: "active", budget: parseFloat(listForm.budget) || 0 });
+    const data = { ...listForm, budget: parseFloat(listForm.budget) || 0 };
+    if (editingList) {
+      await ShoppingList.update(editingList.id, data);
+      if (activeList && activeList.id === editingList.id) setActiveList({ ...activeList, ...data });
+    } else {
+      await ShoppingList.create({ ...data, status: "active" });
+    }
     setSaving(false);
     setListFormOpen(false);
+    setEditingList(null);
     setListForm({ name: "", budget: "", notes: "" });
     loadLists();
   };
 
-  const addItem = async (e) => {
+  const openNewListForm = () => {
+    setEditingList(null);
+    setListForm({ name: "", budget: "", notes: "" });
+    setListFormOpen(true);
+  };
+
+  const openEditListForm = (list) => {
+    setEditingList(list);
+    setListForm({ name: list.name || "", budget: list.budget || "", notes: list.notes || "" });
+    setListFormOpen(true);
+  };
+
+  const saveItem = async (e) => {
     e.preventDefault();
     setSaving(true);
-    await ShoppingItem.create({ ...itemForm, list_id: activeList.id, purchased: false, quantity: parseFloat(itemForm.quantity) || 1, estimated_price: parseFloat(itemForm.estimated_price) || 0 });
+    const data = { ...itemForm, quantity: parseFloat(itemForm.quantity) || 1, estimated_price: parseFloat(itemForm.estimated_price) || 0 };
+    if (editingItem) {
+      await ShoppingItem.update(editingItem.id, data);
+    } else {
+      await ShoppingItem.create({ ...data, list_id: activeList.id, purchased: false });
+    }
     setSaving(false);
     setItemFormOpen(false);
+    setEditingItem(null);
     setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
     loadItems(activeList.id);
+  };
+
+  const openNewItemForm = () => {
+    setEditingItem(null);
+    setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
+    setItemFormOpen(true);
+  };
+
+  const openEditItemForm = (item) => {
+    setEditingItem(item);
+    setItemForm({
+      product_name: item.product_name || "",
+      quantity: item.quantity ?? 1,
+      unit: item.unit || "Units",
+      estimated_price: item.estimated_price ?? "",
+      store: item.store || "",
+      notes: item.notes || "",
+    });
+    setItemFormOpen(true);
   };
 
   const toggleItem = async (item) => {
@@ -89,15 +135,18 @@ export default function Shopping() {
             <p className="text-sm text-muted-foreground">{purchased}/{total} items purchased · est. ${estimatedTotal.toFixed(2)}</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={() => openEditListForm(activeList)}>
+              <Pencil className="w-4 h-4" />
+            </Button>
             {activeList.status === "active" && total > 0 && purchased === total && (
               <Button size="sm" onClick={completeList}><Check className="w-4 h-4 mr-1" />Complete</Button>
             )}
-            <Button size="sm" onClick={() => setItemFormOpen(true)}><Plus className="w-4 h-4 mr-1" />Add Item</Button>
+            <Button size="sm" onClick={openNewItemForm}><Plus className="w-4 h-4 mr-1" />Add Item</Button>
           </div>
         </div>
 
         {items.length === 0 ? (
-          <EmptyState icon={ShoppingCart} title="No items yet" description="Add items to your shopping list" actionLabel="Add Item" onAction={() => setItemFormOpen(true)} />
+          <EmptyState icon={ShoppingCart} title="No items yet" description="Add items to your shopping list" actionLabel="Add Item" onAction={openNewItemForm} />
         ) : (
           <div className="space-y-2">
             {items.map(item => (
@@ -107,6 +156,9 @@ export default function Shopping() {
                   <p className={`font-medium text-sm ${item.purchased ? "line-through text-muted-foreground" : "text-foreground"}`}>{item.product_name}</p>
                   <p className="text-xs text-muted-foreground">{item.quantity} {item.unit}{item.estimated_price > 0 && ` · est. $${(item.estimated_price * item.quantity).toFixed(2)}`}{item.store && ` · ${item.store}`}</p>
                 </div>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditItemForm(item)}>
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteItem(item.id)}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -115,10 +167,10 @@ export default function Shopping() {
           </div>
         )}
 
-        <Dialog open={itemFormOpen} onOpenChange={setItemFormOpen}>
+        <Dialog open={itemFormOpen} onOpenChange={(open) => { setItemFormOpen(open); if (!open) setEditingItem(null); }}>
           <DialogContent className="max-w-sm">
-            <DialogHeader><DialogTitle>Add Item</DialogTitle></DialogHeader>
-            <form onSubmit={addItem} className="space-y-3">
+            <DialogHeader><DialogTitle>{editingItem ? "Edit Item" : "Add Item"}</DialogTitle></DialogHeader>
+            <form onSubmit={saveItem} className="space-y-3">
               <div>
                 <Label>Product Name *</Label>
                 <Input value={itemForm.product_name} onChange={e => setItemForm(f => ({ ...f, product_name: e.target.value }))} required />
@@ -142,8 +194,8 @@ export default function Shopping() {
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setItemFormOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={saving}>{saving ? "Adding..." : "Add Item"}</Button>
+                <Button type="button" variant="outline" onClick={() => { setItemFormOpen(false); setEditingItem(null); }}>Cancel</Button>
+                <Button type="submit" disabled={saving}>{saving ? "Saving..." : editingItem ? "Save Changes" : "Add Item"}</Button>
               </div>
             </form>
           </DialogContent>
@@ -155,14 +207,14 @@ export default function Shopping() {
   return (
     <div>
       <PageHeader title="Shopping Lists" description="Manage your shopping lists">
-        <Button onClick={() => setListFormOpen(true)}>
+        <Button onClick={openNewListForm}>
           <Plus className="w-4 h-4 mr-2" />
           New List
         </Button>
       </PageHeader>
 
       {lists.length === 0 ? (
-        <EmptyState icon={ShoppingCart} title="No shopping lists" description="Create your first shopping list" actionLabel="New List" onAction={() => setListFormOpen(true)} />
+        <EmptyState icon={ShoppingCart} title="No shopping lists" description="Create your first shopping list" actionLabel="New List" onAction={openNewListForm} />
       ) : (
         <div className="space-y-3">
           {lists.sort((a, b) => (a.status === "completed" ? 1 : -1)).map(list => (
@@ -182,6 +234,9 @@ export default function Shopping() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" onClick={e => { e.stopPropagation(); openEditListForm(list); }}>
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
                 <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100" onClick={e => { e.stopPropagation(); deleteList(list.id); }}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
@@ -192,10 +247,10 @@ export default function Shopping() {
         </div>
       )}
 
-      <Dialog open={listFormOpen} onOpenChange={setListFormOpen}>
+      <Dialog open={listFormOpen} onOpenChange={(open) => { setListFormOpen(open); if (!open) setEditingList(null); }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>New Shopping List</DialogTitle></DialogHeader>
-          <form onSubmit={createList} className="space-y-3">
+          <DialogHeader><DialogTitle>{editingList ? "Edit Shopping List" : "New Shopping List"}</DialogTitle></DialogHeader>
+          <form onSubmit={saveList} className="space-y-3">
             <div>
               <Label>List Name *</Label>
               <Input value={listForm.name} onChange={e => setListForm(f => ({ ...f, name: e.target.value }))} required placeholder="Weekly groceries" />
@@ -209,8 +264,8 @@ export default function Shopping() {
               <Textarea value={listForm.notes} onChange={e => setListForm(f => ({ ...f, notes: e.target.value }))} rows={2} />
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setListFormOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving}>{saving ? "Creating..." : "Create List"}</Button>
+              <Button type="button" variant="outline" onClick={() => { setListFormOpen(false); setEditingList(null); }}>Cancel</Button>
+              <Button type="submit" disabled={saving}>{saving ? "Saving..." : editingList ? "Save Changes" : "Create List"}</Button>
             </div>
           </form>
         </DialogContent>
