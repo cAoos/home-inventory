@@ -6,18 +6,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { UNITS } from "@/lib/units";
+import VoiceButton from "@/components/shared/VoiceButton";
+import { parseInventoryVoiceCommand } from "@/lib/voiceCommands";
 
 const categories = ["Food", "Beverages", "Cleaning supplies", "Personal care", "Pet supplies", "Medicines", "Other"];
 const locations = ["Kitchen", "Refrigerator", "Freezer", "Bathroom", "Laundry room", "Pantry", "Other"];
 
-export default function ProductForm({ open, onOpenChange, product, initialValues, onSave }) {
+export default function ProductForm({ open, onOpenChange, product, onSave }) {
   const [form, setForm] = useState(product || {
     name: "", category: "Food", brand: "", quantity: 1, unit: "Units",
     location: "Kitchen", purchase_date: "", expiration_date: "",
     min_stock: 1, consumption_rate: 0, estimated_price: 0, notes: "",
-    ...initialValues,
   });
   const [saving, setSaving] = useState(false);
+  const [voiceError, setVoiceError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,12 +31,27 @@ export default function ProductForm({ open, onOpenChange, product, initialValues
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
+  const handleVoiceResult = (transcript) => {
+    const parsed = parseInventoryVoiceCommand(transcript);
+    if (!parsed || !parsed.name) {
+      setVoiceError("No entendí el producto, intenta de nuevo.");
+      setTimeout(() => setVoiceError(""), 3000);
+      return;
+    }
+    setVoiceError("");
+    setForm(prev => ({ ...prev, name: parsed.name, quantity: parsed.quantity, unit: parsed.unit }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading">{product ? "Edit Product" : "Add Product"}</DialogTitle>
+          <div className="flex items-center justify-between gap-2 pr-6">
+            <DialogTitle className="font-heading">{product ? "Edit Product" : "Add Product"}</DialogTitle>
+            <VoiceButton onResult={handleVoiceResult} />
+          </div>
         </DialogHeader>
+        {voiceError && <p className="text-sm text-destructive">{voiceError}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">

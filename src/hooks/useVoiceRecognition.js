@@ -9,6 +9,7 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
   const [error, setError] = useState(null);
   const recognitionRef = useRef(null);
   const onResultRef = useRef(null);
+  const finalTranscriptRef = useRef("");
 
   const isSupported = !!SpeechRecognitionAPI;
 
@@ -16,29 +17,35 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
     if (!isSupported) return;
     const recognition = new SpeechRecognitionAPI();
     recognition.lang = lang;
-    recognition.continuous = false;
+    // continuous keeps the mic open across natural pauses in a spoken
+    // command; without it, recognition ends after the first short pause
+    // and cuts the rest of the sentence off.
+    recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onresult = (event) => {
-      let finalText = "";
       let interimText = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) finalText += result[0].transcript;
-        else interimText += result[0].transcript;
+        if (result.isFinal) {
+          finalTranscriptRef.current = `${finalTranscriptRef.current} ${result[0].transcript}`.trim();
+        } else {
+          interimText += result[0].transcript;
+        }
       }
       setInterimTranscript(interimText);
-      if (finalText.trim()) onResultRef.current?.(finalText.trim());
     };
 
     recognition.onerror = (event) => {
       setError(event.error);
-      setListening(false);
     };
 
     recognition.onend = () => {
       setListening(false);
       setInterimTranscript("");
+      const finalText = finalTranscriptRef.current.trim();
+      finalTranscriptRef.current = "";
+      if (finalText) onResultRef.current?.(finalText);
     };
 
     recognitionRef.current = recognition;
@@ -48,6 +55,7 @@ export function useVoiceRecognition({ lang = "es-CO" } = {}) {
   const start = useCallback((onResult) => {
     if (!recognitionRef.current || listening) return;
     onResultRef.current = onResult;
+    finalTranscriptRef.current = "";
     setError(null);
     setInterimTranscript("");
     try {
