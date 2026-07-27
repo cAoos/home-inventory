@@ -53,10 +53,14 @@ CREATE TABLE IF NOT EXISTS shopping_lists (
   name TEXT NOT NULL,
   status TEXT DEFAULT 'active',
   budget NUMERIC,
+  purchase_date DATE,
   notes TEXT,
   created_date TIMESTAMPTZ DEFAULT NOW(),
   updated_date TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration for pre-existing databases (safe to re-run)
+ALTER TABLE shopping_lists ADD COLUMN IF NOT EXISTS purchase_date DATE;
 
 CREATE TABLE IF NOT EXISTS shopping_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

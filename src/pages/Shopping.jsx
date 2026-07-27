@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, ShoppingCart, Check, ChevronRight, ArrowLeft, Trash2, Pencil } from "lucide-react";
+import { Plus, ShoppingCart, Check, ChevronRight, ArrowLeft, Trash2, Pencil, DollarSign, Calendar } from "lucide-react";
 import { ShoppingList, ShoppingItem } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,32 +11,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import StatCard from "@/components/shared/StatCard";
 import VoiceButton from "@/components/shared/VoiceButton";
 import { UNITS } from "@/lib/units";
 import { parseShoppingVoiceCommand } from "@/lib/voiceCommands";
+import { registerPurchase } from "@/lib/purchaseSync";
+
+const itemTotal = (item) => (parseFloat(item.quantity) || 1) * (item.actual_price ?? item.estimated_price ?? 0);
 
 export default function Shopping() {
   const [lists, setLists] = useState([]);
+  const [allItems, setAllItems] = useState([]);
   const [activeList, setActiveList] = useState(null);
   const [items, setItems] = useState([]);
   const [listFormOpen, setListFormOpen] = useState(false);
   const [itemFormOpen, setItemFormOpen] = useState(false);
-  const [listForm, setListForm] = useState({ name: "", budget: "", notes: "" });
-  const [itemForm, setItemForm] = useState({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
+  const [listForm, setListForm] = useState({ name: "", budget: "", purchase_date: "", notes: "" });
+  const [itemForm, setItemForm] = useState({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", actual_price: "", store: "", notes: "" });
   const [editingList, setEditingList] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
   const [voiceError, setVoiceError] = useState("");
 
   const loadLists = () => ShoppingList.list().then(setLists);
+  const loadAllItems = () => ShoppingItem.list().then(setAllItems);
   const loadItems = (listId) => ShoppingItem.list({ list_id: listId }).then(setItems);
 
-  useEffect(() => { loadLists(); }, []);
+  useEffect(() => { loadLists(); loadAllItems(); }, []);
 
   const openList = (list) => {
     setActiveList(list);
     loadItems(list.id);
   };
+
+  const backToLists = () => {
+    setActiveList(null);
+    loadLists();
+    loadAllItems();
+  };
+
+  const listTotal = (listId) => allItems.filter(i => i.list_id === listId).reduce((s, i) => s + itemTotal(i), 0);
+  const overallTotal = lists.reduce((s, l) => s + listTotal(l.id), 0);
 
   const saveList = async (e) => {
     e.preventDefault();
@@ -51,26 +66,31 @@ export default function Shopping() {
     setSaving(false);
     setListFormOpen(false);
     setEditingList(null);
-    setListForm({ name: "", budget: "", notes: "" });
+    setListForm({ name: "", budget: "", purchase_date: "", notes: "" });
     loadLists();
   };
 
   const openNewListForm = () => {
     setEditingList(null);
-    setListForm({ name: "", budget: "", notes: "" });
+    setListForm({ name: "", budget: "", purchase_date: new Date().toISOString().slice(0, 10), notes: "" });
     setListFormOpen(true);
   };
 
   const openEditListForm = (list) => {
     setEditingList(list);
-    setListForm({ name: list.name || "", budget: list.budget || "", notes: list.notes || "" });
+    setListForm({ name: list.name || "", budget: list.budget || "", purchase_date: list.purchase_date || "", notes: list.notes || "" });
     setListFormOpen(true);
   };
 
   const saveItem = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const data = { ...itemForm, quantity: parseFloat(itemForm.quantity) || 1, estimated_price: parseFloat(itemForm.estimated_price) || 0 };
+    const data = {
+      ...itemForm,
+      quantity: parseFloat(itemForm.quantity) || 1,
+      estimated_price: parseFloat(itemForm.estimated_price) || 0,
+      actual_price: itemForm.actual_price === "" ? null : parseFloat(itemForm.actual_price) || 0,
+    };
     if (editingItem) {
       await ShoppingItem.update(editingItem.id, data);
     } else {
@@ -79,13 +99,13 @@ export default function Shopping() {
     setSaving(false);
     setItemFormOpen(false);
     setEditingItem(null);
-    setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
+    setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", actual_price: "", store: "", notes: "" });
     loadItems(activeList.id);
   };
 
   const openNewItemForm = () => {
     setEditingItem(null);
-    setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", store: "", notes: "" });
+    setItemForm({ product_name: "", quantity: 1, unit: "Units", estimated_price: "", actual_price: "", store: "", notes: "" });
     setItemFormOpen(true);
   };
 
@@ -96,6 +116,7 @@ export default function Shopping() {
       quantity: item.quantity ?? 1,
       unit: item.unit || "Units",
       estimated_price: item.estimated_price ?? "",
+      actual_price: item.actual_price ?? "",
       store: item.store || "",
       notes: item.notes || "",
     });
@@ -114,7 +135,18 @@ export default function Shopping() {
   };
 
   const toggleItem = async (item) => {
-    await ShoppingItem.update(item.id, { purchased: !item.purchased });
+    const purchased = !item.purchased;
+    await ShoppingItem.update(item.id, { purchased });
+    if (purchased) {
+      await registerPurchase({
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit: item.unit,
+        store: item.store,
+        purchase_date: activeList.purchase_date || new Date().toISOString().slice(0, 10),
+        price: item.actual_price ?? item.estimated_price ?? 0,
+      });
+    }
     loadItems(activeList.id);
   };
 
@@ -140,15 +172,19 @@ export default function Shopping() {
     const purchased = items.filter(i => i.purchased).length;
     const total = items.length;
     const estimatedTotal = items.reduce((s, i) => s + (i.estimated_price || 0) * (i.quantity || 1), 0);
+    const spentTotal = items.reduce((s, i) => s + itemTotal(i), 0);
     return (
       <div>
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => { setActiveList(null); loadLists(); }}>
+          <Button variant="ghost" size="icon" onClick={backToLists}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl font-heading font-bold">{activeList.name}</h1>
-            <p className="text-sm text-muted-foreground">{purchased}/{total} items purchased · est. ${estimatedTotal.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">
+              {purchased}/{total} items purchased · est. ${estimatedTotal.toFixed(2)} · total ${spentTotal.toFixed(2)}
+              {activeList.purchase_date && ` · ${activeList.purchase_date}`}
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={() => openEditListForm(activeList)}>
@@ -170,7 +206,13 @@ export default function Shopping() {
                 <Checkbox checked={item.purchased} onCheckedChange={() => toggleItem(item)} />
                 <div className="flex-1">
                   <p className={`font-medium text-sm ${item.purchased ? "line-through text-muted-foreground" : "text-foreground"}`}>{item.product_name}</p>
-                  <p className="text-xs text-muted-foreground">{item.quantity} {item.unit}{item.estimated_price > 0 && ` · est. $${(item.estimated_price * item.quantity).toFixed(2)}`}{item.store && ` · ${item.store}`}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.quantity} {item.unit}
+                    {item.purchased && item.actual_price > 0
+                      ? ` · $${(item.actual_price * item.quantity).toFixed(2)}`
+                      : item.estimated_price > 0 && ` · est. $${(item.estimated_price * item.quantity).toFixed(2)}`}
+                    {item.store && ` · ${item.store}`}
+                  </p>
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditItemForm(item)}>
                   <Pencil className="w-3.5 h-3.5" />
@@ -216,6 +258,10 @@ export default function Shopping() {
                   <Input type="number" min="0" step="0.01" value={itemForm.estimated_price} onChange={e => setItemForm(f => ({ ...f, estimated_price: e.target.value }))} />
                 </div>
                 <div>
+                  <Label>Actual Price</Label>
+                  <Input type="number" min="0" step="0.01" placeholder="Once purchased" value={itemForm.actual_price} onChange={e => setItemForm(f => ({ ...f, actual_price: e.target.value }))} />
+                </div>
+                <div>
                   <Label>Store</Label>
                   <Input value={itemForm.store} onChange={e => setItemForm(f => ({ ...f, store: e.target.value }))} />
                 </div>
@@ -240,6 +286,19 @@ export default function Shopping() {
         </Button>
       </PageHeader>
 
+      {lists.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <StatCard icon={ShoppingCart} label="Shopping Lists" value={lists.length} color="primary" />
+          <StatCard icon={DollarSign} label="Total Spent" value={`$${overallTotal.toFixed(2)}`} color="accent" />
+          <StatCard
+            icon={Calendar}
+            label="Last Purchase"
+            value={lists.reduce((latest, l) => (l.purchase_date && (!latest || l.purchase_date > latest) ? l.purchase_date : latest), "") || "—"}
+            color="blue"
+          />
+        </div>
+      )}
+
       {lists.length === 0 ? (
         <EmptyState icon={ShoppingCart} title="No shopping lists" description="Create your first shopping list" actionLabel="New List" onAction={openNewListForm} />
       ) : (
@@ -252,11 +311,13 @@ export default function Shopping() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{list.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <Badge variant={list.status === "completed" ? "secondary" : "default"} className="text-[10px]">
                       {list.status}
                     </Badge>
+                    {list.purchase_date && <span className="text-xs text-muted-foreground">{list.purchase_date}</span>}
                     {list.budget > 0 && <span className="text-xs text-muted-foreground">Budget: ${list.budget}</span>}
+                    {listTotal(list.id) > 0 && <span className="text-xs font-medium text-foreground">Total: ${listTotal(list.id).toFixed(2)}</span>}
                   </div>
                 </div>
               </div>
@@ -282,9 +343,15 @@ export default function Shopping() {
               <Label>List Name *</Label>
               <Input value={listForm.name} onChange={e => setListForm(f => ({ ...f, name: e.target.value }))} required placeholder="Weekly groceries" />
             </div>
-            <div>
-              <Label>Budget ($)</Label>
-              <Input type="number" min="0" step="0.01" value={listForm.budget} onChange={e => setListForm(f => ({ ...f, budget: e.target.value }))} placeholder="Optional" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Budget ($)</Label>
+                <Input type="number" min="0" step="0.01" value={listForm.budget} onChange={e => setListForm(f => ({ ...f, budget: e.target.value }))} placeholder="Optional" />
+              </div>
+              <div>
+                <Label>Purchase Date</Label>
+                <Input type="date" value={listForm.purchase_date} onChange={e => setListForm(f => ({ ...f, purchase_date: e.target.value }))} />
+              </div>
             </div>
             <div>
               <Label>Notes</Label>
