@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,16 @@ export default function ProductForm({ open, onOpenChange, product, onSave }) {
   });
   const [saving, setSaving] = useState(false);
   const [voiceError, setVoiceError] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setForm(product || {
+        name: "", category: "Food", brand: "", quantity: 1, unit: "Units",
+        location: "Kitchen", purchase_date: "", expiration_date: "",
+        min_stock: 1, consumption_rate: 0, estimated_price: 0, notes: "",
+      });
+    }
+  }, [open, product]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
