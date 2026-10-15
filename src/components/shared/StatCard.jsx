@@ -1,28 +1,30 @@
 import React from "react";
 
+// Colorful pastel tile with white text, inspired by mobile app dashboards
 export default function StatCard({ icon: Icon, label, value, subtext, color = "primary" }) {
-  const colorMap = {
-    primary: "bg-primary/10 text-primary",
-    accent: "bg-accent/10 text-accent-foreground",
-    destructive: "bg-destructive/10 text-destructive",
-    blue: "bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400",
-    purple: "bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400",
+  const tileMap = {
+    primary: "tile-violet",
+    accent: "tile-peach",
+    destructive: "tile-pink",
+    blue: "tile-sky",
+    purple: "tile-violet",
+    mint: "tile-mint",
+    lemon: "tile-lemon",
   };
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-2xl font-heading font-bold text-foreground">{value}</p>
-          {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
-        </div>
+    <div className={`${tileMap[color] || tileMap.primary} relative overflow-hidden rounded-3xl p-4 lg:p-5 text-white shadow-lg shadow-primary/10`}>
+      <div className="absolute -right-5 -bottom-5 w-20 h-20 rounded-full bg-white/20" />
+      <div className="relative flex items-start justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-white/90">{label}</p>
         {Icon && (
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorMap[color] || colorMap.primary}`}>
-            <Icon className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-2xl bg-white/30 flex items-center justify-center">
+            <Icon className="w-[18px] h-[18px]" />
           </div>
         )}
       </div>
+      <p className="relative text-3xl font-heading font-black mt-2 drop-shadow-sm">{value}</p>
+      {subtext && <p className="relative text-xs text-white/90 font-medium">{subtext}</p>}
     </div>
   );
 }

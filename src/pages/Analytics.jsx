@@ -49,17 +49,17 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Total Spent</p>
           <p className="text-2xl font-heading font-bold">${totalSpent.toFixed(2)}</p>
           <p className="text-xs text-muted-foreground mt-1">{priceRecords.length} purchases recorded</p>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Products Tracked</p>
           <p className="text-2xl font-heading font-bold">{products.length}</p>
           <p className="text-xs text-muted-foreground mt-1">in inventory</p>
         </div>
-        <div className="bg-card rounded-xl border border-border p-5">
+        <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
           <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Stores Visited</p>
           <p className="text-2xl font-heading font-bold">{Object.keys(storeData).length}</p>
           <p className="text-xs text-muted-foreground mt-1">unique stores</p>
@@ -77,7 +77,7 @@ export default function Analytics() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {topProducts.length > 0 && (
-              <div className="bg-card rounded-xl border border-border p-5">
+              <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
                 <h3 className="font-heading font-semibold text-sm mb-4">Most Purchased Products</h3>
                 <div className="space-y-3">
                   {topProducts.map(([name, count], i) => (
@@ -92,7 +92,7 @@ export default function Analytics() {
             )}
 
             {storeAvgs.length > 0 && (
-              <div className="bg-card rounded-xl border border-border p-5">
+              <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
                 <h3 className="font-heading font-semibold text-sm mb-4">Store Avg. Unit Price (lowest first)</h3>
                 <div className="space-y-3">
                   {storeAvgs.map((s, i) => (

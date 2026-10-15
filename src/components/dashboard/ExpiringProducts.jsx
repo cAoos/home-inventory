@@ -9,7 +9,7 @@ export default function ExpiringProducts({ products }) {
 
   if (expiring.length === 0) {
     return (
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
         <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
           <Clock className="w-4 h-4 text-muted-foreground" />
           Expiring Soon
@@ -20,7 +20,7 @@ export default function ExpiringProducts({ products }) {
   }
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
+    <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
       <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
         <AlertTriangle className="w-4 h-4 text-destructive" />
         Expiring Soon

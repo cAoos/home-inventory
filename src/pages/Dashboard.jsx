@@ -28,21 +28,21 @@ export default function Dashboard() {
   const totalValue = products.reduce((sum, p) => sum + ((p.estimated_price || 0) * (p.quantity || 0)), 0);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">Loading...</div>;
+    return <div className="flex items-center justify-center h-64 text-muted-foreground bg-card rounded-3xl">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-foreground">Dashboard</h1>
+      <div className="hidden lg:block">
+        <h1 className="text-2xl font-heading font-extrabold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">Overview of your home inventory</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatCard icon={Package} label="Total Products" value={products.length} subtext="items tracked" color="primary" />
         <StatCard icon={AlertTriangle} label="Low Stock" value={lowStock.length} subtext="need restocking" color="destructive" />
         <StatCard icon={Clock} label="Expiring Soon" value={expiringSoon.length} subtext="within 7 days" color="accent" />
-        <StatCard icon={DollarSign} label="Inventory Value" value={`$${totalValue.toFixed(0)}`} subtext="estimated total" color="blue" />
+        <StatCard icon={DollarSign} label="Inventory Value" value={`$${totalValue.toFixed(0)}`} subtext="estimated total" color="mint" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

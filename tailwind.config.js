@@ -5,7 +5,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['Inter', 'sans-serif'],
+        heading: ['Nunito', 'Inter', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -41,11 +42,24 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        peach: 'hsl(var(--peach))',
+        pink: 'hsl(var(--pink))',
+        mint: 'hsl(var(--mint))',
+        sky: 'hsl(var(--sky))',
+        lemon: 'hsl(var(--lemon))',
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      keyframes: {
+        'sheet-up': { from: { transform: 'translateY(100%)' }, to: { transform: 'translateY(0)' } },
+        'fade-in': { from: { opacity: 0 }, to: { opacity: 1 } },
+      },
+      animation: {
+        'sheet-up': 'sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
+        'fade-in': 'fade-in 0.2s ease-out',
       },
     },
   },

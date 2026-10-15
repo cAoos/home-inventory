@@ -3,7 +3,6 @@ import { Plus, Search, Package } from "lucide-react";
 import { Product } from "@/api/entities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
 import ProductCard from "@/components/inventory/ProductCard";
@@ -59,24 +58,30 @@ export default function Inventory() {
         </Button>
       </PageHeader>
 
-      <div className="flex gap-3 mb-6 flex-col sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-          </SelectContent>
-        </Select>
+      <div className="relative mb-3">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Search products..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="pl-10 rounded-full"
+        />
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-2 mb-4 lg:mx-0 lg:px-0 lg:flex-wrap [scrollbar-width:none]">
+        {categories.map(c => (
+          <button
+            key={c}
+            onClick={() => setCategory(c)}
+            className={`shrink-0 px-4 h-9 rounded-full text-xs font-semibold border transition-all active:scale-95 ${
+              category === c
+                ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/25"
+                : "bg-card text-muted-foreground border-border"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -90,7 +95,7 @@ export default function Inventory() {
           onAction={() => { setEditProduct(null); setFormOpen(true); }}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-4">
           {filtered.map(p => (
             <ProductCard key={p.id} product={p} onEdit={handleEdit} onDelete={handleDelete} />
           ))}

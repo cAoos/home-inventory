@@ -9,7 +9,7 @@ export default function LowStockProducts({ products }) {
 
   if (combined.length === 0) {
     return (
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
         <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
           <PackageMinus className="w-4 h-4 text-muted-foreground" />
           Stock Alerts
@@ -20,7 +20,7 @@ export default function LowStockProducts({ products }) {
   }
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
+    <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
       <h3 className="font-heading font-semibold text-sm mb-3 flex items-center gap-2">
         <PackageMinus className="w-4 h-4 text-accent-foreground" />
         Stock Alerts

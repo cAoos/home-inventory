@@ -89,7 +89,7 @@ export default function PriceTracker() {
           {filtered.length === 0 ? (
             <EmptyState icon={TrendingUp} title="No price records" description="Start recording prices to track trends" actionLabel="Record Price" onAction={() => setFormOpen(true)} />
           ) : (
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -139,7 +139,7 @@ export default function PriceTracker() {
               const max = Math.max(...prices);
               const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
               return (
-                <div key={product} className="bg-card rounded-xl border border-border p-5">
+                <div key={product} className="bg-card rounded-3xl border border-border shadow-sm p-5">
                   <h3 className="font-heading font-semibold mb-3">{product}</h3>
                   <div className="grid grid-cols-3 gap-4 mb-4">
                     <div className="text-center">

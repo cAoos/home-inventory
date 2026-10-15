@@ -82,7 +82,7 @@ export default function Budget() {
       </div>
 
       {budgetAmount2 > 0 && (
-        <div className="bg-card rounded-xl border border-border p-5 mb-6">
+        <div className="bg-card rounded-3xl border border-border shadow-sm p-5 mb-6">
           <div className="flex justify-between text-sm mb-2">
             <span className="text-muted-foreground">Budget used</span>
             <span className={`font-semibold ${pct > 100 ? "text-destructive" : "text-foreground"}`}>{pct.toFixed(0)}%</span>
@@ -96,7 +96,7 @@ export default function Budget() {
         </div>
       )}
 
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
         <h3 className="font-heading font-semibold text-sm mb-4">Purchases this month ({monthRecords.length})</h3>
         {monthRecords.length === 0 ? (
           <p className="text-sm text-muted-foreground">No purchases recorded for {moment(month).format("MMMM YYYY")}.</p>

@@ -76,7 +76,7 @@ export default function Stores() {
           {stores.map(store => {
             const stats = getStoreStats(store.name);
             return (
-              <div key={store.id} className="bg-card rounded-xl border border-border p-5 hover:shadow-md transition-all group">
+              <div key={store.id} className="bg-card rounded-3xl border border-border shadow-sm p-5 hover:shadow-md transition-all group">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -87,7 +87,7 @@ export default function Stores() {
                       <Badge variant="secondary" className="text-[10px] mt-0.5">{store.type}</Badge>
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openForm(store)}>
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>

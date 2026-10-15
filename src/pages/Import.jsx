@@ -170,7 +170,7 @@ export default function Import() {
       <PageHeader title="Import Data" description="Import products and price records from CSV files" />
 
       {/* Products */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -226,7 +226,7 @@ export default function Import() {
       </div>
 
       {/* Price Records */}
-      <div className="bg-card rounded-xl border border-border p-6">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">

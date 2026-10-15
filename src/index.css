@@ -4,26 +4,37 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pastel palette: lavender primary, peach secondary */
+    --background: 260 60% 97.5%;
+    --foreground: 258 30% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 258 30% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 258 30% 18%;
+    --primary: 258 75% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 24 100% 93%;
+    --secondary-foreground: 18 70% 38%;
+    --muted: 258 50% 95%;
+    --muted-foreground: 258 12% 48%;
+    --accent: 258 80% 94%;
+    --accent-foreground: 258 55% 42%;
+    --destructive: 350 85% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 258 40% 91%;
+    --input: 258 40% 88%;
+    --ring: 258 75% 64%;
+    --radius: 1rem;
+
+    /* Extra pastel accents */
+    --peach: 22 100% 75%;
+    --pink: 330 90% 80%;
+    --mint: 152 60% 70%;
+    --sky: 205 90% 76%;
+    --lemon: 45 95% 70%;
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   .dark {
@@ -56,9 +67,28 @@
   body {
     @apply bg-background text-foreground;
     margin: 0;
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
   #root {
     width: 100%;
     min-height: 100vh;
   }
+  h1, h2, h3 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .app-hero {
+    background: linear-gradient(135deg, hsl(258 80% 72%) 0%, hsl(280 75% 76%) 55%, hsl(330 85% 82%) 100%);
+  }
+  .tile-violet { background: linear-gradient(135deg, hsl(258 85% 80%), hsl(270 80% 72%)); }
+  .tile-peach  { background: linear-gradient(135deg, hsl(30 100% 82%), hsl(18 100% 74%)); }
+  .tile-pink   { background: linear-gradient(135deg, hsl(335 95% 86%), hsl(340 85% 76%)); }
+  .tile-mint   { background: linear-gradient(135deg, hsl(160 65% 78%), hsl(165 55% 64%)); }
+  .tile-sky    { background: linear-gradient(135deg, hsl(200 95% 82%), hsl(210 85% 72%)); }
+  .tile-lemon  { background: linear-gradient(135deg, hsl(48 100% 80%), hsl(40 95% 68%)); }
+  .pb-nav { padding-bottom: calc(6.5rem + var(--safe-bottom)); }
 }

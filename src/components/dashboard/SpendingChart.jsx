@@ -15,7 +15,7 @@ export default function SpendingChart({ priceRecords }) {
 
   if (data.length === 0) {
     return (
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
         <h3 className="font-heading font-semibold text-sm mb-3">Monthly Spending</h3>
         <p className="text-sm text-muted-foreground">No spending data yet.</p>
       </div>
@@ -23,7 +23,7 @@ export default function SpendingChart({ priceRecords }) {
   }
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5">
+    <div className="bg-card rounded-3xl border border-border shadow-sm p-5">
       <h3 className="font-heading font-semibold text-sm mb-4">Monthly Spending</h3>
       <div className="h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -40,7 +40,7 @@ export default function SpendingChart({ priceRecords }) {
               }}
               formatter={(val) => [`$${val.toFixed(2)}`, "Spent"]}
             />
-            <Bar dataKey="total" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="total" fill="hsl(var(--primary))" radius={[10, 10, 10, 10]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
