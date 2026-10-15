@@ -228,7 +228,7 @@ export default function Shopping() {
         <Dialog open={itemFormOpen} onOpenChange={(open) => { setItemFormOpen(open); if (!open) setEditingItem(null); }}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <div className="flex items-center justify-between gap-2 pr-6">
+              <div className="flex items-center justify-between gap-2 pr-11">
                 <DialogTitle>{editingItem ? "Edit Item" : "Add Item"}</DialogTitle>
                 <VoiceButton onResult={handleVoiceItemResult} />
               </div>
@@ -322,10 +322,10 @@ export default function Shopping() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100" onClick={e => { e.stopPropagation(); openEditListForm(list); }}>
+                <Button variant="ghost" size="icon" className="h-9 w-9 lg:h-7 lg:w-7 lg:opacity-0 lg:group-hover:opacity-100" onClick={e => { e.stopPropagation(); openEditListForm(list); }}>
                   <Pencil className="w-3.5 h-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100" onClick={e => { e.stopPropagation(); deleteList(list.id); }}>
+                <Button variant="ghost" size="icon" className="h-9 w-9 lg:h-7 lg:w-7 text-destructive lg:opacity-0 lg:group-hover:opacity-100" onClick={e => { e.stopPropagation(); deleteList(list.id); }}>
                   <Trash2 className="w-3.5 h-3.5" />
                 </Button>
                 <ChevronRight className="w-4 h-4 text-muted-foreground" />

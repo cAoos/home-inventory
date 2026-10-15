@@ -56,7 +56,7 @@ export default function ProductForm({ open, onOpenChange, product, onSave }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between gap-2 pr-6">
+          <div className="flex items-center justify-between gap-2 pr-11">
             <DialogTitle className="font-heading">{product ? "Edit Product" : "Add Product"}</DialogTitle>
             <VoiceButton onResult={handleVoiceResult} />
           </div>
