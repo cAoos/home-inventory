@@ -3,11 +3,6 @@ import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
 
-const categoryTiles = {
-  "Food": "bg-[hsl(152_70%_90%)]", "Beverages": "bg-[hsl(205_90%_92%)]", "Cleaning supplies": "bg-[hsl(258_80%_93%)]",
-  "Personal care": "bg-[hsl(330_90%_93%)]", "Pet supplies": "bg-[hsl(28_100%_91%)]", "Medicines": "bg-[hsl(350_85%_93%)]", "Other": "bg-[hsl(45_95%_89%)]",
-};
-
 const categoryIcons = {
   "Food": "🍎", "Beverages": "🥤", "Cleaning supplies": "🧹",
   "Personal care": "🧴", "Pet supplies": "🐾", "Medicines": "💊", "Other": "📦",
@@ -26,7 +21,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
     <div className="bg-card rounded-3xl border border-border shadow-sm p-4 hover:shadow-md transition-all group">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <span className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 ${categoryTiles[product.category] || categoryTiles.Other}`}>
+          <span className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-accent`}>
             {categoryIcons[product.category] || "📦"}
           </span>
           <div>

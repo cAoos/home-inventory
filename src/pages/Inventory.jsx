@@ -75,7 +75,7 @@ export default function Inventory() {
             onClick={() => setCategory(c)}
             className={`shrink-0 px-4 h-9 rounded-full text-xs font-semibold border transition-all active:scale-95 ${
               category === c
-                ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/25"
+                ? "bg-deep text-white border-deep shadow-md shadow-deep/25"
                 : "bg-card text-muted-foreground border-border"
             }`}
           >

@@ -7,15 +7,15 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const navItems = [
-  { path: "/", label: "Dashboard", short: "Home", icon: LayoutDashboard, tabIcon: House, title: "Hello there!", subtitle: "Overview of your home inventory", tile: "tile-violet" },
-  { path: "/inventory", label: "Inventory", short: "Pantry", icon: Package, subtitle: "Manage your home products", tile: "tile-mint" },
-  { path: "/shopping", label: "Shopping Lists", short: "Shopping", icon: ShoppingCart, subtitle: "Manage your shopping lists", tile: "tile-peach" },
-  { path: "/prices", label: "Price Tracker", icon: TrendingUp, subtitle: "Track and compare prices across stores", tile: "tile-sky" },
-  { path: "/stores", label: "Store Compare", icon: Store, subtitle: "Manage and compare your stores", tile: "tile-pink" },
-  { path: "/analytics", label: "Analytics", icon: BarChart3, subtitle: "Where your money goes", tile: "tile-violet" },
-  { path: "/budget", label: "Budget", icon: Wallet, subtitle: "Plan your monthly spending", tile: "tile-lemon" },
-  { path: "/import", label: "Import Data", icon: Upload, subtitle: "Import products and prices from CSV", tile: "tile-sky" },
-  { path: "/alerts", label: "Alerts", short: "Alerts", icon: Bell, subtitle: "Stock and expiration reminders", tile: "tile-pink" },
+  { path: "/", label: "Dashboard", short: "Home", icon: LayoutDashboard, tabIcon: House, title: "Hello there!", subtitle: "Overview of your home inventory", tile: "tile-deep" },
+  { path: "/inventory", label: "Inventory", short: "Pantry", icon: Package, subtitle: "Manage your home products", tile: "tile-intense" },
+  { path: "/shopping", label: "Shopping Lists", short: "Shopping", icon: ShoppingCart, subtitle: "Manage your shopping lists", tile: "tile-medium" },
+  { path: "/prices", label: "Price Tracker", icon: TrendingUp, subtitle: "Track and compare prices across stores", tile: "tile-deep" },
+  { path: "/stores", label: "Store Compare", icon: Store, subtitle: "Manage and compare your stores", tile: "tile-intense" },
+  { path: "/analytics", label: "Analytics", icon: BarChart3, subtitle: "Where your money goes", tile: "tile-medium" },
+  { path: "/budget", label: "Budget", icon: Wallet, subtitle: "Plan your monthly spending", tile: "tile-deep" },
+  { path: "/import", label: "Import Data", icon: Upload, subtitle: "Import products and prices from CSV", tile: "tile-intense" },
+  { path: "/alerts", label: "Alerts", short: "Alerts", icon: Bell, subtitle: "Stock and expiration reminders", tile: "tile-medium" },
 ];
 
 // Mobile bottom bar: four primary tabs + "More" sheet for the rest
@@ -49,9 +49,9 @@ function MobileHero({ item }) {
         <p className="text-sm text-white/85 mt-1">{item?.subtitle}</p>
       </div>
 
-      {/* layered waves, peach behind and page background in front */}
+      {/* layered waves, medium purple behind and page background in front */}
       <svg className="absolute bottom-0 left-0 w-full h-12" viewBox="0 0 400 48" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0 20 C 70 0 130 40 210 22 S 340 6 400 18 V48 H0 Z" fill="hsl(var(--peach))" opacity="0.85" />
+        <path d="M0 20 C 70 0 130 40 210 22 S 340 6 400 18 V48 H0 Z" fill="hsl(var(--medium))" opacity="0.7" />
         <path d="M0 34 C 90 14 160 50 250 32 S 360 22 400 30 V48 H0 Z" fill="hsl(var(--background))" />
       </svg>
     </header>
@@ -74,18 +74,18 @@ function BottomNav({ pathname, onMore, moreOpen }) {
               to={item.path}
               className="flex-1 flex flex-col items-center gap-0.5 py-1 active:scale-95 transition"
             >
-              <span className={`w-11 h-8 rounded-2xl flex items-center justify-center transition-all ${active ? "bg-primary text-primary-foreground shadow-md shadow-primary/30" : "text-muted-foreground"}`}>
+              <span className={`w-11 h-8 rounded-2xl flex items-center justify-center transition-all ${active ? "bg-deep text-white shadow-md shadow-deep/30" : "text-muted-foreground"}`}>
                 {React.createElement(item.tabIcon || item.icon, { className: "w-5 h-5" })}
               </span>
-              <span className={`text-[10px] font-semibold ${active ? "text-primary" : "text-muted-foreground"}`}>{item.short}</span>
+              <span className={`text-[10px] font-semibold ${active ? "text-deep" : "text-muted-foreground"}`}>{item.short}</span>
             </Link>
           );
         })}
         <button onClick={onMore} className="flex-1 flex flex-col items-center gap-0.5 py-1 active:scale-95 transition">
-          <span className={`w-11 h-8 rounded-2xl flex items-center justify-center transition-all ${moreActive ? "bg-secondary text-secondary-foreground" : "text-muted-foreground"}`}>
+          <span className={`w-11 h-8 rounded-2xl flex items-center justify-center transition-all ${moreActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}>
             <LayoutGrid className="w-5 h-5" />
           </span>
-          <span className={`text-[10px] font-semibold ${moreActive ? "text-secondary-foreground" : "text-muted-foreground"}`}>More</span>
+          <span className={`text-[10px] font-semibold ${moreActive ? "text-deep" : "text-muted-foreground"}`}>More</span>
         </button>
       </div>
     </nav>
@@ -116,7 +116,7 @@ function MoreSheet({ open, onClose, pathname }) {
               onClick={onClose}
               className={`rounded-2xl p-3 flex flex-col items-center gap-2 text-center active:scale-95 transition ${pathname === item.path ? "ring-2 ring-primary ring-offset-2" : ""}`}
             >
-              <span className={`${item.tile} w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-sm`}>
+              <span className={`${item.tile} w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm`}>
                 <item.icon className="w-6 h-6" />
               </span>
               <span className="text-xs font-semibold text-foreground leading-tight">{item.label}</span>
